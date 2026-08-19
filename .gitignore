@@ -1,0 +1,12 @@
+target/
+.settings/
+.project
+.classpath
+.factorypath
+.recommenders/
+tomcat8080/
+*.log
+
+tomcat.8080/
+target/
+.settings/
