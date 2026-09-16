@@ -24,12 +24,12 @@ public class ConexionDB {
 	private static final String PASSWORD = "fT3i*ec$??z8V6#"; // Colocá la clave de tu base de datos
 
 	private static ConexionDB instance; 
-	private Connection conn;
+	private static Connection conn;
 
 	private ConexionDB() {
 	}
 
-	public Connection dameConnection() {
+	public static Connection dameConnection() {
 		try {
 			Class.forName(DRIVER);
 			if (conn == null || conn.isClosed()) {

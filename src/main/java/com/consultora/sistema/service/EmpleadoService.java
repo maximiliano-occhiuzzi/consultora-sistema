@@ -1,5 +1,14 @@
 package com.consultora.sistema.service;
 
-public interface EmpleadoService {
 
+import java.util.List;
+
+import com.consultora.sistema.domain.Empleado;
+
+public interface EmpleadoService {
+    List<Empleado> listarEmpleados();
+    Empleado buscarPorId(int id);
+    boolean guardar(Empleado empleado);
+    boolean modificar(Empleado empleado);
+    boolean borrar(int id);
 }
