@@ -1,0 +1,504 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.consultora.sistema.domain.Tarea" %>
+
+<%
+    List<Tarea> tareas = (List<Tarea>) request.getAttribute("tareas");
+    Tarea tareaEditar = (Tarea) request.getAttribute("tareaEditar");
+%>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas | TechConsult</title>
+    <!-- FontAwesome para Íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #0f172a;
+            --sidebar-bg: #020617;
+            --card: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 240px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .brand-dot {
+            background: var(--primary);
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .brand small {
+            display: block;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        aside nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1;
+        }
+
+        aside nav a {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        aside nav a:hover, aside nav a.active {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        aside nav a.active {
+            border-left: 3px solid var(--primary);
+        }
+
+        aside nav a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+
+        /* MAIN CONTENT */
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.05em;
+        }
+
+        .topbar h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0.2rem 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        /* TOOLBAR */
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search {
+            position: relative;
+            flex: 1;
+        }
+
+        .search i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+
+        .search input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            outline: none;
+        }
+
+        .search input:focus {
+            border-color: var(--primary);
+        }
+
+        /* TABLE */
+        .section-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 0.75rem 1rem;
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.pendiente { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge.progreso { background: rgba(59, 130, 246, 0.15); color: var(--primary); }
+        .badge.completada { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+        .btn-action {
+            color: var(--danger);
+            text-decoration: none;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* FORMULARIO */
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .form-card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        .form-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .form-grid label.full {
+            grid-column: 1 / -1;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- BARRA LATERAL (NAVEGACIÓN) -->
+    <aside>
+        <div class="brand">
+            <span class="brand-dot">TC</span>
+            <div>
+                <strong>TechConsult</strong>
+                <small>Administración</small>
+            </div>
+        </div>
+        
+        <nav>
+            <a href="${pageContext.request.contextPath}/Dashboard"><i class="fa-solid fa-house"></i> <span>Inicio</span></a>
+            <a href="${pageContext.request.contextPath}/Empleado"><i class="fa-solid fa-users"></i> <span>Empleados</span></a>
+            <a href="${pageContext.request.contextPath}/Proyecto"><i class="fa-solid fa-diagram-project"></i> <span>Proyectos</span></a>
+            <a href="${pageContext.request.contextPath}/Asignaciones"><i class="fa-solid fa-list-check"></i> <span>Asignaciones</span></a>
+            <a href="${pageContext.request.contextPath}/Tarea" class="active"><i class="fa-solid fa-tasks"></i> <span>Tareas</span></a>
+            <a href="${pageContext.request.contextPath}/Chat"><i class="fa-solid fa-comments"></i> <span>Chat</span></a>
+        </nav>
+        
+        <div class="user-box">
+            <div class="avatar">AD</div>
+            <div>
+                <strong>${sessionScope.username != null ? sessionScope.username : 'Admin'}</strong>
+                <small>Administrador</small>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main>
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Gestión Operativa</p>
+                <h1>Tareas</h1>
+                <p style="color: var(--muted); font-size: 0.875rem;">Administrá las tareas asignadas a los proyectos.</p>
+            </div>
+            <a class="btn primary" href="#registrar">
+                <i class="fa-solid fa-plus"></i> Nueva tarea
+            </a>
+        </header>
+
+        <section class="toolbar">
+            <div class="search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="taskSearch" type="text" placeholder="Buscar tarea por título...">
+            </div>
+        </section>
+
+        <!-- TABLA DE TAREAS -->
+        <section class="section-card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (tareas != null && !tareas.isEmpty()) {
+                            for (Tarea t : tareas) {
+                                String estadoClass = "pendiente";
+                                if ("En Progreso".equalsIgnoreCase(t.getEstado()) || "En curso".equalsIgnoreCase(t.getEstado())) {
+                                    estadoClass = "progreso";
+                                } else if ("Completada".equalsIgnoreCase(t.getEstado()) || "Finalizada".equalsIgnoreCase(t.getEstado())) {
+                                    estadoClass = "completada";
+                                }
+                        %>
+                            <tr>
+                                <td>#<%= t.getId() %></td>
+                                <td><strong><%= t.getTitulo() %></strong></td>
+                                <td style="color: var(--muted);"><%= t.getDescripcion() != null ? t.getDescripcion() : "-" %></td>
+                                <td>
+                                    <span class="badge <%= estadoClass %>">
+                                        <%= t.getEstado() != null ? t.getEstado() : "Pendiente" %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="${pageContext.request.contextPath}/Tarea?accion=eliminar&id=<%= t.getId() %>" 
+                                       class="btn-action" 
+                                       onclick="return confirm('¿Eliminar esta tarea?')">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <%  }
+                        } else { %>
+                            <tr>
+                                <td colspan="5" style="color: var(--muted); text-align: center;">No hay tareas registradas en el sistema.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FORMULARIO DE REGISTRO / EDICIÓN -->
+        <section class="form-card" id="registrar">
+            <div>
+                <h2><%= (tareaEditar != null) ? "Editar Tarea" : "Crear Nueva Tarea" %></h2>
+                <p style="color: var(--muted); font-size: 0.875rem;">Completá los campos para registrar o actualizar la información de la tarea.</p>
+            </div>
+
+            <form action="${pageContext.request.contextPath}/Tarea" method="post">
+                <!-- CAMPO OCULTO ID -->
+                <input type="hidden" name="id" value="<%= (tareaEditar != null) ? tareaEditar.getId() : "0" %>">
+
+                <div class="form-grid">
+                    <label class="full">
+                        Título de la tarea *
+                        <input type="text" name="titulo" value="<%= (tareaEditar != null && tareaEditar.getTitulo() != null) ? tareaEditar.getTitulo() : "" %>" placeholder="Ej. Diseñar interfaz principal" required>
+                    </label>
+
+                    <label class="full">
+                        Estado *
+                        <% String est = (tareaEditar != null && tareaEditar.getEstado() != null) ? tareaEditar.getEstado() : ""; %>
+                        <select name="estado" required>
+                            <option value="">Seleccionar estado</option>
+                            <option value="Pendiente" <%= "Pendiente".equalsIgnoreCase(est) ? "selected" : "" %>>Pendiente</option>
+                            <option value="En Progreso" <%= "En Progreso".equalsIgnoreCase(est) || "En curso".equalsIgnoreCase(est) ? "selected" : "" %>>En Progreso</option>
+                            <opwtion value="Completada" <%= "Completada".equalsIgnoreCase(est) || "Finalizada".equalsIgnoreCase(est) ? "selected" : "" %>>Completada</option>
+                        </select>
+                    </label>
+
+                    <label class="full">
+                        Descripción
+                        <textarea name="descripcion" placeholder="Detalles o especificaciones adicionales de la tarea..."><%= (tareaEditar != null && tareaEditar.getDescripcion() != null) ? tareaEditar.getDescripcion() : "" %></textarea>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <a href="${pageContext.request.contextPath}/Tarea" class="btn secondary">Limpiar</a>
+                    <button type="submit" class="btn primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Tarea
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+<script src="${pageContext.request.contextPath}/scripts/script.js"></script>
+</body>
+</html>

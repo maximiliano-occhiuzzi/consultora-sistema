@@ -17,7 +17,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     @Override
     public List<Empleado> listar() {
         List<Empleado> lista = new ArrayList<>();
-        String sql = "SELECT * FROM empleado";
+        String sql = "SELECT * FROM empleados";
 
         try (Connection cn = ConexionDB.dameConnection();
              PreparedStatement ps = cn.prepareStatement(sql);
@@ -41,7 +41,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
     @Override
     public Empleado obtenerPorId(int id) {
         Empleado emp = null;
-        String sql = "SELECT * FROM empleado WHERE id = ?";
+        String sql = "SELECT * FROM empleados WHERE id = ?";
 
         try (Connection cn = ConexionDB.dameConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -65,7 +65,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
     @Override
     public boolean insertar(Empleado empleado) {
-        String sql = "INSERT INTO empleado (nombre, apellido, email, puesto) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO empleados (nombre, apellido, email, puesto) VALUES (?, ?, ?, ?)";
         try (Connection cn = ConexionDB.dameConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
 
@@ -83,7 +83,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
     @Override
     public boolean actualizar(Empleado empleado) {
-        String sql = "UPDATE empleado SET nombre = ?, apellido = ?, email = ?, puesto = ? WHERE id = ?";
+        String sql = "UPDATE empleados SET nombre = ?, apellido = ?, email = ?, puesto = ? WHERE id = ?";
         try (Connection cn = ConexionDB.dameConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
 
@@ -102,7 +102,7 @@ public class EmpleadoDAOImpl implements EmpleadoDAO {
 
     @Override
     public boolean eliminar(int id) {
-        String sql = "DELETE FROM empleado WHERE id = ?";
+        String sql = "DELETE FROM empleados WHERE id = ?";
         try (Connection cn = ConexionDB.dameConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
 

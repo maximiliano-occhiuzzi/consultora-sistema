@@ -11,16 +11,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.consultora.sistema.domain.Usuario;
-import com.consultora.sistema.service.AsignacionTareaService;
-import com.consultora.sistema.service.AsignacionTareaService;
+import com.consultora.sistema.service.UsuarioService;
+import com.consultora.sistema.service.impl.UsuarioServiceImpl;
 
 @WebServlet("/Login")
 public class LoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private AsignacionTareaService asignacionTareaService = new UsuarioServiceImp();
+    private UsuarioService usuarioService = new UsuarioServiceImpl();
 
-    // SHA-256 del password ingresado para comparar con la BD
     private String sha256(String input) throws Exception {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(input.getBytes("UTF-8"));
@@ -54,12 +53,11 @@ public class LoginServlet extends HttpServlet {
 
         try {
             String passHash = sha256(password.trim());
-            boolean valido  = asignacionTareaService.login(username.trim(), passHash);
+            boolean valido  = usuarioService.login(username.trim(), passHash);
 
             if (valido) {
-                // Crear sesión
                 HttpSession session = request.getSession(true);
-                Usuario u = asignacionTareaService.buscarUsuarioPorNombre(username.trim());
+                Usuario u = usuarioService.buscarUsuarioPorNombre(username.trim());
                 session.setAttribute("usuarioId",   u.getId());
                 session.setAttribute("username",    u.getUsername());
                 session.setMaxInactiveInterval(30 * 60); // 30 minutos

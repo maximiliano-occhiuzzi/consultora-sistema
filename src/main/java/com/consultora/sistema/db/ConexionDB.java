@@ -2,53 +2,29 @@ package com.consultora.sistema.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.logging.Logger;
 
 public class ConexionDB {
 
-	private static final Logger log = Logger.getLogger(ConexionDB.class.getName());
+    // Usar el pooler IPv4 de Supabase (Puerto 6543)
+    private static final String URL = "jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require";
+    private static final String USUARIO = "postgres.nqxpoacupkekgwznixub"; 
+    private static final String PASSWORD = "-!5i%2RXVZ&#yNN";
 
-	private static final String DRIVER = "org.postgresql.Driver";
-	
-	// DATOS OFICIALES DE TU CONEXIÓN SUPABASE
-	private static final String HOST = "://supabase.com"; 
-	private static final String PUERTO = "6543"; // Puerto del pooler de transacciones
-	private static final String DBNAME = "postgres?pgbouncer=true"; // Parámetro óptimo para el pooler
-	
-	// URL JDBC definitiva para PostgreSQL
-	private static final String URL = "jdbc:postgresql://" + HOST + ":" + PUERTO + "/" + DBNAME;
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
-	// CREDENCIALES DE ACCESO ACTUALIZADAS
-	private static final String USUARIO = "postgres.ortprlwuunusdyxsrnsp"; 
-	private static final String PASSWORD = "fT3i*ec$??z8V6#"; // Colocá la clave de tu base de datos
-
-	private static ConexionDB instance; 
-	private static Connection conn;
-
-	private ConexionDB() {
-	}
-
-	public static Connection dameConnection() {
-		try {
-			Class.forName(DRIVER);
-			if (conn == null || conn.isClosed()) {
-				conn = DriverManager.getConnection(URL, USUARIO, PASSWORD);
-				log.info("Conexión exitosa a Supabase mediante Transaction Pooler.");
-			}
-			return conn;
-		} catch (ClassNotFoundException e) {
-			log.severe("Error de acceso al driver de PostgreSQL: " + e.getMessage());
-		} catch (SQLException e) {
-			log.severe("Error de SQL al conectar a Supabase: " + e.getMessage());
-		}
-		return null;
-	}
-
-	public static ConexionDB getInstance() {
-		if (instance == null) {
-			instance = new ConexionDB();
-		}
-		return instance;
-	}
+    public static Connection dameConnection() {
+        try {
+            return DriverManager.getConnection(URL, USUARIO, PASSWORD);
+        } catch (Exception e) {
+            System.err.println(">>> ERROR CONECTANDO A SUPABASE:");
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

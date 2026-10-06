@@ -1,11 +1,10 @@
 package com.consultora.sistema.service;
 
+import com.consultora.sistema.domain.AsignacionTarea;
 import java.util.List;
 
-
-//Dentro de UsuarioService.java
 public interface AsignacionTareaService {
-
-
-	
-}
+    List<AsignacionTarea> listarAsignaciones();
+    boolean asignar(AsignacionTarea at);
+    boolean desasignar(int id);
+}	

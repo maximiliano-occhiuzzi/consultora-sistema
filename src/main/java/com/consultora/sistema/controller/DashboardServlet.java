@@ -1,41 +1,34 @@
 package com.consultora.sistema.controller;
 
-import java.io.IOException;
+import com.consultora.sistema.service.EmpleadoService;
+import com.consultora.sistema.service.ProyectoService;
+import com.consultora.sistema.service.TareaService;
+import com.consultora.sistema.service.impl.EmpleadoServiceImpl;
+import com.consultora.sistema.service.impl.ProyectoServiceImpl;
+import com.consultora.sistema.service.impl.TareaServiceImpl;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-/**
- * Servlet implementation class DashboardServlet
- */
-@WebServlet("/DashboardServlet")
+@WebServlet("/Dashboard")
 public class DashboardServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-    /**
-     
-     */
-    public DashboardServlet() {
-        super();
-        // TODO Auto-generated constructor stub
+
+    private final ProyectoService proyectoService = new ProyectoServiceImpl();
+    private final EmpleadoService empleadoService = new EmpleadoServiceImpl();
+    private final TareaService tareaService = new TareaServiceImpl();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        request.setAttribute("proyectos", proyectoService.listarProyectos());
+        request.setAttribute("cantEmpleados", empleadoService.listarEmpleados().size());
+        request.setAttribute("cantTareas", tareaService.listarTareas().size());
+        
+        request.getRequestDispatcher("/vistas/index.jsp").forward(request, response);
     }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
-
 }
