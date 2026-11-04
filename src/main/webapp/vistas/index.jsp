@@ -444,13 +444,12 @@
       </div>
       
       <nav>
-  <a class="active" href="${pageContext.request.contextPath}/dashboard"><i class="fa-solid fa-house"></i> <span>Inicio</span></a>
-  <a href="${pageContext.request.contextPath}/Empleado"><i class="fa-solid fa-users"></i> <span>Empleados</span></a>
-  <a href="${pageContext.request.contextPath}/Proyecto"><i class="fa-solid fa-diagram-project"></i> <span>Proyectos</span></a>
-  <a href="${pageContext.request.contextPath}/Asignaciones"><i class="fa-solid fa-list-check"></i> <span>Asignaciones</span></a>
-  <a href="${pageContext.request.contextPath}/Chat"><i class="fa-solid fa-comments"></i> <span>Chat</span></a>
- 
-</nav>
+        <a class="active" href="${pageContext.request.contextPath}/vistas/index.jsp"><i class="fa-solid fa-house"></i> <span>Inicio</span></a>
+        <a href="${pageContext.request.contextPath}/Empleado"><i class="fa-solid fa-users"></i> <span>Empleados</span></a>
+        <a href="${pageContext.request.contextPath}/Proyecto"><i class="fa-solid fa-diagram-project"></i> <span>Proyectos</span></a>
+        <a href="${pageContext.request.contextPath}/Asignaciones"><i class="fa-solid fa-list-check"></i> <span>Asignaciones</span></a>
+        <a href="${pageContext.request.contextPath}/Chat"><i class="fa-solid fa-comments"></i> <span>Chat</span></a>
+      </nav>
       
       <div class="user-box">
         <div class="avatar">AD</div>
@@ -625,7 +624,7 @@
             </div>
           </div>
           <div class="quick-actions">
-           <a href="${pageContext.request.contextPath}/Empleado" class="quick"><i class="fa-solid fa-user-plus"></i> Registrar empleado</a>
+            <a href="${pageContext.request.contextPath}/Empleado" class="quick"><i class="fa-solid fa-user-plus"></i> Registrar empleado</a>
             <a href="${pageContext.request.contextPath}/Proyecto" class="quick"><i class="fa-solid fa-folder-plus"></i> Crear proyecto</a>
             <a href="${pageContext.request.contextPath}/Asignaciones" class="quick"><i class="fa-solid fa-list-check"></i> Gestionar asignaciones</a>
             <a href="${pageContext.request.contextPath}/Tarea" class="quick"><i class="fa-solid fa-tasks"></i> Ver tareas</a>
