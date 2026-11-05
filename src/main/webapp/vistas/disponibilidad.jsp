@@ -1,14 +1,153 @@
-<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Disponibilidad | Proyecto Consultora</title><link rel="stylesheet" href="estilos.css"></head>
-<body><div class="app"><aside class="sidebar">
-<div class="brand"><span class="brand-dot">TC</span><div><strong>TechConsult</strong><small>Administración</small></div></div>
-<nav><a href="index.jsp">⌂ <span>Inicio</span></a><a href="empleados.jsp">♙ <span>Empleados</span></a><a href="proyectos.jsp">▣ <span>Proyectos</span></a><a href="asignaciones.jsp">↔ <span>Asignaciones</span></a><a class="active" href="disponibilidad.jsp">● <span>Disponibilidad</span></a><a href="chat.jsp">▱ <span>Chat</span></a><a href="configuracion.jsp">⚙ <span>Configuración</span></a></nav>
-<div class="user-box"><div class="avatar">AD</div><div><strong>Admin</strong><small>Administrador</small></div></div></aside>
-<main class="content"><header class="topbar"><div><p class="eyebrow">Personal</p><h1>Disponibilidad</h1><p class="muted">Consultá rápidamente quién puede ser asignado a un proyecto.</p></div></header>
-<section class="stats-grid compact"><div class="stat-card"><span class="stat-icon green">●</span><div><span>Disponibles</span><strong>11</strong></div></div><div class="stat-card"><span class="stat-icon warning">◐</span><div><span>Ocupados</span><strong>13</strong></div></div><div class="stat-card"><span class="stat-icon red">○</span><div><span>Offline</span><strong>7</strong></div></div></section>
-<section class="section-card"><div class="toolbar"><div class="search">⌕ <input placeholder="Buscar empleado..."></div><select><option>Todos</option><option>Disponible</option><option>Ocupado</option></select><select><option>Todos los roles</option><option>Backend</option><option>Frontend</option><option>DevOps</option></select></div><div class="table-wrap"><table><thead><tr><th>Empleado</th><th>Rol</th><th>Estado en vivo</th><th>Disponibilidad</th><th>Proyectos activos</th></tr></thead><tbody>
-<tr><td><div class="person"><div class="avatar">JP</div><div><strong>Juan Pérez</strong><small>Última actividad: ahora</small></div></div></td><td>Backend</td><td><span class="online">● En línea</span></td><td><span class="badge success">Disponible</span></td><td>1</td></tr>
-<tr><td><div class="person"><div class="avatar orange-bg">DF</div><div><strong>Diego Fernández</strong><small>Última actividad: ahora</small></div></div></td><td>Frontend</td><td><span class="online">● En línea</span></td><td><span class="badge success">Disponible</span></td><td>1</td></tr>
-<tr><td><div class="person"><div class="avatar dark-bg">LM</div><div><strong>Luis Martínez</strong><small>Última actividad: hace 20 min</small></div></div></td><td>DevOps</td><td><span class="offline">● Offline</span></td><td><span class="badge success">Disponible</span></td><td>1</td></tr>
-<tr><td><div class="person"><div class="avatar purple-bg">AG</div><div><strong>Ana Gómez</strong><small>Última actividad: ahora</small></div></div></td><td>Diseñadora</td><td><span class="online">● En línea</span></td><td><span class="badge warning">Ocupada</span></td><td>3</td></tr>
-</tbody></table></div></section></main></div><script src="script.js"></script></body></html>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="com.consultora.sistema.domain.Empleado" %>
+<%
+    @SuppressWarnings("unchecked")
+    List<Empleado> empleados = (List<Empleado>) request.getAttribute("empleados");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> proyectosPorEmpleado = (Map<Integer, Integer>) request.getAttribute("proyectosPorEmpleado");
+    @SuppressWarnings("unchecked")
+    Map<Integer, Integer> tareasPorEmpleado = (Map<Integer, Integer>) request.getAttribute("tareasPorEmpleado");
+
+    if (empleados == null || proyectosPorEmpleado == null || tareasPorEmpleado == null) {
+        response.sendRedirect(request.getContextPath() + "/Empleado?accion=disponibilidad");
+        return;
+    }
+
+    int disponibles = 0;
+    int asignados = 0;
+    int cargaAlta = 0;
+    int totalTareasAsignadas = 0;
+
+    for (Empleado e : empleados) {
+        int proyectos = proyectosPorEmpleado.getOrDefault(e.getId(), 0);
+        totalTareasAsignadas += tareasPorEmpleado.getOrDefault(e.getId(), 0);
+        if (proyectos == 0) disponibles++;
+        else if (proyectos == 1) asignados++;
+        else cargaAlta++;
+    }
+
+    request.setAttribute("activeNav", "disponibilidad");
+    request.setAttribute("pageTitle", "Disponibilidad");
+%>
+<%@ include file="/WEB-INF/jspf/header.jspf" %>
+
+<header class="topbar">
+    <div>
+        <p class="eyebrow">Personal</p>
+        <h1>Disponibilidad</h1>
+        <p class="muted">Carga real de cada empleado según sus proyectos y tareas asignadas.</p>
+    </div>
+    <a class="btn secondary" href="<%= ctxPath %>/Empleado">
+        <i class="fa-solid fa-users"></i> Ver empleados
+    </a>
+</header>
+
+<section class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span>
+        <div>
+            <span class="stat-label">Disponibles</span>
+            <strong><%= disponibles %></strong>
+            <span class="stat-hint">Sin proyectos asignados</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon blue"><i class="fa-solid fa-user-check"></i></span>
+        <div>
+            <span class="stat-label">Con un proyecto</span>
+            <strong><%= asignados %></strong>
+            <span class="stat-hint">Carga normal</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <div>
+            <span class="stat-label">Carga alta</span>
+            <strong><%= cargaAlta %></strong>
+            <span class="stat-hint">Dos o más proyectos</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon purple"><i class="fa-solid fa-tasks"></i></span>
+        <div>
+            <span class="stat-label">Tareas asignadas</span>
+            <strong><%= totalTareasAsignadas %></strong>
+            <span class="stat-hint">En todos los empleados</span>
+        </div>
+    </div>
+</section>
+
+<section class="toolbar">
+    <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="employeeSearch" type="text" placeholder="Buscar empleado por nombre, rol o disponibilidad...">
+    </div>
+</section>
+
+<section class="section-card">
+    <div class="table-wrap">
+        <table id="employeesTable">
+            <thead>
+            <tr>
+                <th>Empleado</th>
+                <th>Rol</th>
+                <th>Proyectos activos</th>
+                <th>Tareas asignadas</th>
+                <th>Disponibilidad</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% if (!empleados.isEmpty()) {
+                for (Empleado e : empleados) {
+                    int proyectos = proyectosPorEmpleado.getOrDefault(e.getId(), 0);
+                    int tareasEmpleado = tareasPorEmpleado.getOrDefault(e.getId(), 0);
+                    String iniciales = (e.getNombre() != null && !e.getNombre().isEmpty() ? e.getNombre().substring(0, 1) : "")
+                            + (e.getApellido() != null && !e.getApellido().isEmpty() ? e.getApellido().substring(0, 1) : "");
+
+                    String disponibilidad;
+                    String badgeClass;
+                    if (proyectos == 0) {
+                        disponibilidad = "Disponible";
+                        badgeClass = "success";
+                    } else if (proyectos == 1) {
+                        disponibilidad = "Asignado";
+                        badgeClass = "info";
+                    } else {
+                        disponibilidad = "Carga alta";
+                        badgeClass = "warning";
+                    }
+            %>
+            <tr>
+                <td>
+                    <div class="person">
+                        <div class="avatar"><%= iniciales.toUpperCase() %></div>
+                        <div>
+                            <strong><%= e.getNombre() %> <%= e.getApellido() %></strong>
+                            <small><%= e.getEmail() != null ? e.getEmail() : "-" %></small>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge neutral"><%= e.getPuesto() != null ? e.getPuesto() : "Sin rol" %></span></td>
+                <td><%= proyectos %></td>
+                <td><%= tareasEmpleado %></td>
+                <td><span class="badge <%= badgeClass %>"><%= disponibilidad %></span></td>
+            </tr>
+            <%  }
+            } else { %>
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <i class="fa-regular fa-user"></i>
+                        No hay empleados registrados.
+                    </div>
+                </td>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%@ include file="/WEB-INF/jspf/footer.jspf" %>

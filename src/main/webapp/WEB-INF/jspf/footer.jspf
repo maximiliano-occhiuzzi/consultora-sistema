@@ -1,0 +1,7 @@
+<%@ page pageEncoding="UTF-8" %>
+    </main>
+</div>
+<div id="toast-container" aria-live="polite"></div>
+<script src="<%= ctxPath %>/scripts/script.js"></script>
+</body>
+</html>

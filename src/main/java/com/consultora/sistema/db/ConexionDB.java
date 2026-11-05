@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 public class ConexionDB {
 
     // Usar el pooler IPv4 de Supabase (Puerto 6543 con pgbouncer=true)
-    private static final String URL = "jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require";
+    private static final String URL = "jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require&prepareThreshold=0";
     private static final String USUARIO = "postgres.nqxpoacupkekgwznixub"; 
     private static final String PASSWORD = "6tcsistema26nuevo";
 

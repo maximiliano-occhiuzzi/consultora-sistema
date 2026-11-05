@@ -21,6 +21,14 @@ public class TareaServiceImpl implements TareaService {
     }
 
     @Override
+    public List<Tarea> listarTareasPorProyecto(int idProyecto) {
+        if (idProyecto <= 0) {
+            return listarTareas();
+        }
+        return tareaDAO.listarPorProyecto(idProyecto);
+    }
+
+    @Override
     public Tarea buscarPorId(int id) {
         return tareaDAO.obtenerPorId(id);
     }

@@ -1,104 +1,154 @@
-# 🚀 Modulex - Sistema de Asignación de Personal Técnico
+# TechConsult - Sistema de Gestión de Consultora
 
-[![Java Version](https://shields.io)](https://oracle.com)
-[![PostgreSQL](https://shields.io)](https://postgresql.org)
-[![Supabase](https://shields.io)](https://supabase.com)
+Aplicación web monolítica para administrar empleados, proyectos, tareas y asignaciones de una consultora tecnológica.
 
-**Modulex** es una solución informática monolítica modular diseñada para una consultora tecnológica internacional. Su propósito principal es optimizar y administrar eficientemente la asignación de personal técnico a múltiples proyectos concurrentes del sector público y privado, controlando cargas horarias, competencias específicas y plazos de entrega.
+## Tecnologías
 
----
+- **Java 17**
+- **Jakarta Servlet 6.0 / JSP 3.1**
+- **Apache Tomcat 10.1**
+- **Maven 3.9+**
+- **PostgreSQL en Supabase** mediante JDBC y *Transaction Pooler*
+- **HTML5 + CSS3 + JavaScript** sin frameworks de frontend
 
-## 📑 Índice
-* [🛠️ Tecnologías y Herramientas](#%EF%B8%8F-tecnolog%C3%ADas-y-herramientas)
-* [🏛️ Arquitectura del Proyecto](#%EF%B8%8F-arquitectura-del-proyecto)
-* [🗂️ Modelo de Datos (DER)](#%EF%B8%8F-modelo-de-datos-der)
-* [🎛️ Controladores y Endpoints](#%EF%B8%8F-controladores-y-endpoints)
-* [🚀 Configuración e Instalación](#-configuraci%C3%B3n-e-instalaci%C3%B3n)
+> El proyecto usa `jakarta.servlet` (Tomcat 10.1). No es compatible con Tomcat 9, que trabaja con `javax.servlet`.
 
----
-
-## 🛠️ Tecnologías y Herramientas
-
-*   **Lenguaje:** Java 17+ (Servlets & JSPs)
-*   **Base de Datos:** PostgreSQL en la nube mediante **Supabase**
-*   **Persistencia:** JDBC nativo con Driver oficial de PostgreSQL
-*   **Optimización:** Connection Pooling a través del *Transaction Pooler* integrado (Puerto `6543`)
-*   **Control de Versiones:** Git & GitHub CLI (`gh`)
-
----
-
-## 🏛️ Arquitectura del Proyecto
-
-El sistema adopta el patrón de arquitectura clásica **MVC (Model-View-Controller)** con desacoplamiento mediante capas de Servicio y DAO:
+## Arquitectura
 
 ```text
 src/main/
-├── java/
-│   └── com.consultora.sistema
-│       ├── controller/      # Servlets que manejan la interfaz web (?action=)
-│       ├── domain/          # Entidades o modelos de datos (POJOs)
-│       ├── service/         # Capa con la lógica de negocio y validaciones
-│       ├── dao/             # Interfaces de acceso a datos
-│       │   └── impl/        # Implementaciones JDBC nativas
-│       └── db/              # Singleton de conexión ConexionDB.java
+├── java/com/consultora/sistema/
+│   ├── config/       # Main con Tomcat embebido
+│   ├── controller/   # Servlets (Login, Dashboard, Empleado, Proyecto, Tarea, Asignaciones, Chat)
+│   ├── dao/          # Interfaces de acceso a datos
+│   │   └── impl/     # Implementaciones JDBC
+│   ├── db/           # ConexionDB y scripts SQL
+│   ├── domain/       # Entidades y DTOs
+│   ├── filter/       # AuthFilter
+│   └── service/      # Lógica de negocio
+│       └── impl/
+├── resources/db/migration/  # Migraciones SQL
 └── webapp/
-    ├── assets/              # Archivos estáticos (CSS, JS, Imágenes)
-    └── WEB-INF/
-        └── views/           # Vistas JSP protegidas (Estructura -list y -form)
+    ├── scripts/      # JavaScript global
+    ├── styles/       # Hoja de estilos única
+    └── vistas/
+        ├── fragmentos/  # Header y footer compartidos
+        └── *.jsp
 ```
 
----
+## Modelo de datos
 
-## 🗂️ Modelo de Datos (DER)
+| Tabla | Descripción |
+| :--- | :--- |
+| `usuarios` | Credenciales del administrador. |
+| `empleados` | Personal técnico de la consultora. |
+| `proyectos` | Proyectos con nombre, descripción y estado. |
+| `tareas` | Tareas vinculadas a un proyecto mediante `id_proyecto`. |
+| `asignaciones_proyecto` | Relación empleado ↔ proyecto, con índice único para evitar duplicados. |
+| `asignaciones_tarea` | Relación empleado ↔ tarea, con índice único para evitar duplicados. |
 
-El diseño relacional se compone de 5 tablas principales optimizadas para romper la relación de muchos a muchos existente entre Empleados y Proyectos:
+La columna `tareas.id_proyecto` es la relación principal proyecto–tarea. Si se elimina un proyecto, sus tareas se eliminan en cascada.
 
-*   **`empleados` (`int4`):** Almacena el perfil técnico, conocimientos y disponibilidad máxima de horas semanales.
-*   **`proyectos` (`int4`):** Registra el nombre, cliente, segmentación (`Público` / `Privado`) y plazos de ejecución.
-*   **`tareas` (`int4`):** Catálogo maestro de actividades operativas (Backend, Frontend, DevOps, etc.).
-*   **`asignacion_proyectos` (`int4`):** Tabla intermedia que vincula técnicos con proyectos, asignando una carga horaria específica.
-*   **`asignacion_tareas` (`int4`):** Detalle de grano fino que conecta la asignación de un empleado con tareas del catálogo y fechas límite de cumplimiento.
+## Endpoints principales
 
----
+| Endpoint | Descripción |
+| :--- | :--- |
+| `/Login` | Autenticación por JSON y creación de sesión. |
+| `/Logout` | Cierre de sesión. |
+| `/Dashboard` | Métricas reales, avance por proyecto y estado de tareas. |
+| `/Empleado` | CRUD de empleados. |
+| `/Empleado?accion=disponibilidad` | Carga y disponibilidad calculadas desde las asignaciones. |
+| `/Proyecto` | Listado y CRUD de proyectos. |
+| `/Proyecto?accion=detalle&id=...` | Detalle, equipo, tareas y avance del proyecto. |
+| `/Tarea` | CRUD de tareas y filtro por proyecto. |
+| `/Asignaciones` | Asignación de empleados a proyectos y tareas. |
+| `/Chat` | Vista demostrativa del chat del equipo. |
+| `/Proyecto?accion=configuracion` | Información técnica del sistema. |
 
-## 🎛️ Controladores y Endpoints
+## Base de datos
 
-Cada módulo operativo se centraliza en un único Servlet dinámico reduciendo drásticamente la duplicación de código en la aplicación:
+La conexión está configurada en:
 
-| Controlador | Endpoint Base | Responsabilidad Operativa |
-| :--- | :--- | :--- |
-| `LoginServlet` | `/login` | Validación de credenciales y establecimiento de `HttpSession` |
-| `LogoutServlet` | `/logout` | Invalidación de sesión y limpieza de cookies |
-| `DashboardServlet` | `/dashboard` | Carga de métricas, alertas de sobreasignación y tareas críticas |
-| `EmpleadoServlet` | `/empleados` | CRUD unificado del personal técnico interno |
-| `ProyectoServlet` | `/proyectos` | CRUD unificado de proyectos públicos y privados |
-| `TareaServlet` | `/tareas` | Administración del catálogo global de especialidades |
-| `AsignacionServlet` | `/asignaciones` | Coordinación de equipos, cruce de horas y plazos |
-
----
-
-## 🚀 Configuración e Instalación
-
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com
-cd consultora-sistema
+```text
+src/main/java/com/consultora/sistema/db/ConexionDB.java
 ```
 
-### 2. Configurar las variables de entorno / Conexión
-Modificá el archivo `src/main/java/com/consultora/sistema/db/ConexionDB.java` con las credenciales de tu instancia de Supabase obtenidas del panel de administración:
+Se usa el pooler de Supabase en el puerto `6543` con `prepareThreshold=0` para evitar conflictos de *prepared statements* en modo transacción.
 
-```java
-private static final String HOST = "://supabase.com"; 
-private static final String PUERTO = "6543"; // Transaction Pooler
-private static final String DBNAME = "postgres?pgbouncer=true";
-private static final String USUARIO = "postgres.ortprlwuunusdyxsrnsp";
-private static final String PASSWORD = "TU_CONTRASEÑA_MAESTRA";
+Para una instalación nueva, ejecutar:
+
+```text
+src/main/java/com/consultora/sistema/db/queries.sql
 ```
 
-### 3. Compilar y Desplegar
-Si utilizás Maven para la construcción del artefacto:
+Para una base ya existente, aplicar la migración:
+
+```text
+src/main/resources/db/migration/V2__tareas_proyecto.sql
+```
+
+La migración agrega `tareas.id_proyecto`, limpia asignaciones duplicadas y crea los índices únicos.
+
+Usuario inicial de desarrollo:
+
+```text
+Usuario: admin
+Contraseña: admin123
+```
+
+## Compilar
+
 ```bash
 mvn clean package
 ```
-Desplegá el archivo `.war` resultante en tu contenedor de Servlets preferido (Apache Tomcat 9/10, Jetty o WildFly).
+
+El WAR se genera en:
+
+```text
+target/consultora-sistema.war
+```
+
+## Ejecutar con Tomcat embebido
+
+Desde el IDE, ejecutar `com.consultora.sistema.config.Main` con esta opción de VM:
+
+```text
+--add-opens=java.base/java.io=ALL-UNNAMED
+```
+
+También se puede ejecutar por consola:
+
+```bash
+mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+java --add-opens=java.base/java.io=ALL-UNNAMED -cp "target/classes;$(cat cp.txt)" com.consultora.sistema.config.Main
+```
+
+En Windows, reemplazar `$(cat cp.txt)` por el contenido del archivo `cp.txt` o usar PowerShell:
+
+```powershell
+$cp = Get-Content cp.txt -Raw
+java --add-opens=java.base/java.io=ALL-UNNAMED -cp "target\classes;$cp" com.consultora.sistema.config.Main
+```
+
+La aplicación queda disponible en `http://localhost:8080`.
+
+## Ejecutar con Docker
+
+La imagen usa una build multi-etapa con **JDK 17 + Maven** y se ejecuta sobre **Tomcat 10.1 + JDK 17**:
+
+```bash
+docker build -t consultora-sistema .
+docker run --rm -p 8080:8080 consultora-sistema
+```
+
+El contenedor publica la aplicación como `ROOT.war`, por lo que se accede directamente en `http://localhost:8080`.
+
+## Frontend
+
+Todas las vistas comparten:
+
+- `src/main/webapp/styles/estilos.css`: tema oscuro, layout, tarjetas, tablas, formularios y login.
+- `src/main/webapp/scripts/script.js`: búsquedas, filtros, confirmaciones y chat.
+- `src/main/webapp/WEB-INF/jspf/header.jspf` y `footer.jspf`: navegación y estructura común.
+
+El login usa el mismo lenguaje visual que el resto del sistema y redirige al dashboard después de autenticarse.

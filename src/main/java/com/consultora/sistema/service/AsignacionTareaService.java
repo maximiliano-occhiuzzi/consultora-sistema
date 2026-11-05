@@ -7,4 +7,4 @@ public interface AsignacionTareaService {
     List<AsignacionTarea> listarAsignaciones();
     boolean asignar(AsignacionTarea at);
     boolean desasignar(int id);
-}	
+}

@@ -1,5 +1,162 @@
-function showToast(message){const old=document.querySelector(".toast");if(old)old.remove();const t=document.createElement("div");t.className="toast";t.textContent=message;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
-function confirmCloseProject(){if(confirm("¿Estás seguro de que querés cerrar este proyecto?"))showToast("Proyecto cerrado (demo)")}
-function addNote(){const input=document.getElementById("noteText");if(!input||!input.value.trim())return showToast("Escribí una nota primero");const box=document.getElementById("notes");const n=document.createElement("div");n.className="note";n.innerHTML='<div class="avatar">AD</div><div><strong>Admin</strong><small>Ahora</small><p></p></div>';n.querySelector("p").textContent=input.value.trim();box.prepend(n);input.value="";showToast("Nota agregada")}
-function sendMessage(e){e.preventDefault();const input=document.getElementById("messageInput");const text=input.value.trim();if(!text)return;const messages=document.getElementById("messages");const m=document.createElement("div");m.className="message own";m.innerHTML='<div><strong>Admin <small>Ahora</small></strong><p></p></div><div class="avatar">AD</div>';m.querySelector("p").textContent=text;messages.appendChild(m);input.value="";messages.scrollTop=messages.scrollHeight}
-document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".task-list input").forEach(cb=>cb.addEventListener("change",()=>showToast(cb.checked?"Tarea marcada como realizada":"Tarea marcada como pendiente")));const checks=[...document.querySelectorAll(".role-check")];const groups=[...document.querySelectorAll(".assign-group")];function updateRoles(){const selected=checks.filter(c=>c.checked).map(c=>c.value);groups.forEach(g=>g.style.display=selected.includes(g.dataset.role)?"block":"none")}checks.forEach(c=>c.addEventListener("change",updateRoles));if(checks.length)updateRoles();let assigned=0;document.querySelectorAll(".assign-btn").forEach(btn=>btn.addEventListener("click",()=>{const active=btn.classList.contains("primary");btn.classList.toggle("primary",!active);btn.classList.toggle("secondary",active);btn.textContent=active?"Asignar":"✓ Asignado";assigned+=active?-1:1;const counter=document.getElementById("assignedCount");if(counter)counter.textContent=assigned+" asignados"}));const search=document.getElementById("employeeSearch");if(search){search.addEventListener("input",()=>{const q=search.value.toLowerCase();document.querySelectorAll("#employeesTable tbody tr").forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?"":"none")})}})
+/* ============================================================
+   TechConsult - JavaScript global
+   ============================================================ */
+
+function showToast(message, type) {
+    const old = document.querySelector(".toast");
+    if (old) old.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    if (type === "error") toast.style.borderLeftColor = "var(--danger)";
+    if (type === "success") toast.style.borderLeftColor = "var(--success)";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    window.setTimeout(() => toast.remove(), 2600);
+}
+
+function normalizar(texto) {
+    return (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function aplicarBusqueda(input, selector) {
+    const query = normalizar(input.value);
+    document.querySelectorAll(selector).forEach((fila) => {
+        const texto = normalizar(fila.textContent);
+        fila.style.display = texto.includes(query) ? "" : "none";
+    });
+}
+
+function inicializarBusquedas() {
+    const employeeSearch = document.getElementById("employeeSearch");
+    if (employeeSearch) {
+        employeeSearch.addEventListener("input", () => {
+            aplicarBusqueda(employeeSearch, "#employeesTable tbody tr");
+        });
+    }
+
+    const taskSearch = document.getElementById("taskSearch");
+    if (taskSearch) {
+        taskSearch.addEventListener("input", () => {
+            const query = normalizar(taskSearch.value);
+            document.querySelectorAll("#tasksTable tbody tr").forEach((fila) => {
+                const coincideTexto = normalizar(fila.textContent).includes(query);
+                const proyecto = document.getElementById("taskProjectFilter")?.value || "";
+                const coincideProyecto = !proyecto || fila.dataset.project === proyecto;
+                fila.style.display = coincideTexto && coincideProyecto ? "" : "none";
+            });
+        });
+    }
+
+    const taskProjectFilter = document.getElementById("taskProjectFilter");
+    if (taskProjectFilter) {
+        taskProjectFilter.addEventListener("change", () => {
+            const proyecto = taskProjectFilter.value;
+            document.querySelectorAll("#tasksTable tbody tr").forEach((fila) => {
+                fila.style.display = !proyecto || fila.dataset.project === proyecto ? "" : "none";
+            });
+        });
+    }
+
+    const projectSearch = document.getElementById("projectSearch");
+    if (projectSearch) {
+        projectSearch.addEventListener("input", () => {
+            aplicarBusqueda(projectSearch, ".project-card");
+        });
+    }
+}
+
+function inicializarFiltroTareasAsignacion() {
+    const proyectoSelect = document.getElementById("assignTaskProject");
+    const tareaSelect = document.getElementById("idTarea");
+    if (!proyectoSelect || !tareaSelect) return;
+
+    const opciones = Array.from(tareaSelect.options);
+
+    const actualizarTareas = () => {
+        const proyecto = proyectoSelect.value;
+        tareaSelect.innerHTML = "";
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = proyecto
+            ? "-- Seleccionar tarea del proyecto --"
+            : "-- Seleccionar proyecto primero --";
+        tareaSelect.appendChild(placeholder);
+
+        opciones.forEach((opcion) => {
+            if (opcion.value === "") return;
+            if (!proyecto || opcion.dataset.project === proyecto) {
+                tareaSelect.appendChild(opcion.cloneNode(true));
+            }
+        });
+    };
+
+    proyectoSelect.addEventListener("change", actualizarTareas);
+    actualizarTareas();
+}
+
+function inicializarConfirmaciones() {
+    document.querySelectorAll("[data-confirm]").forEach((elemento) => {
+        elemento.addEventListener("click", (event) => {
+            if (!window.confirm(elemento.dataset.confirm || "¿Confirma la acción?")) {
+                event.preventDefault();
+            }
+        });
+    });
+}
+
+function inicializarChat() {
+    const form = document.getElementById("chatForm");
+    if (!form) return;
+
+    const input = document.getElementById("messageInput");
+    const messages = document.getElementById("messages");
+    const username = form.dataset.username || "Admin";
+    const iniciales = form.dataset.avatar || "AD";
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        const now = new Date();
+        const hora = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+
+        const message = document.createElement("div");
+        message.className = "message own";
+
+        const body = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = username + " ";
+        const small = document.createElement("small");
+        small.textContent = hora;
+        strong.appendChild(small);
+
+        const p = document.createElement("p");
+        p.textContent = text;
+
+        body.appendChild(strong);
+        body.appendChild(p);
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = iniciales;
+
+        message.appendChild(body);
+        message.appendChild(avatar);
+        messages.appendChild(message);
+        messages.scrollTop = messages.scrollHeight;
+
+        input.value = "";
+        input.focus();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarBusquedas();
+    inicializarFiltroTareasAsignacion();
+    inicializarConfirmaciones();
+    inicializarChat();
+});

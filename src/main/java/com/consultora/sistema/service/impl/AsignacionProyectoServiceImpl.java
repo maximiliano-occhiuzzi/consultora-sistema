@@ -17,12 +17,26 @@ public class AsignacionProyectoServiceImpl implements AsignacionProyectoService 
     }
 
     @Override
+    public List<AsignacionProyecto> listarPorProyecto(int idProyecto) {
+        if (idProyecto <= 0) {
+            return dao.listar();
+        }
+        return dao.listarPorProyecto(idProyecto);
+    }
+
+    @Override
     public boolean asignar(AsignacionProyecto ap) {
+        if (ap == null || ap.getIdEmpleado() <= 0 || ap.getIdProyecto() <= 0) {
+            return false;
+        }
+        if (dao.existe(ap.getIdEmpleado(), ap.getIdProyecto())) {
+            return false;
+        }
         return dao.insertar(ap);
     }
 
     @Override
     public boolean desasignar(int id) {
-        return dao.eliminar(id);
+        return id > 0 && dao.eliminar(id);
     }
 }

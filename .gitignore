@@ -4,9 +4,6 @@ target/
 .classpath
 .factorypath
 .recommenders/
-tomcat8080/
+tomcat.*/
 *.log
-
-tomcat.8080/
-target/
-.settings/
+cp.txt

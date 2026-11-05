@@ -18,11 +18,17 @@ public class AsignacionTareaServiceImpl implements AsignacionTareaService {
 
     @Override
     public boolean asignar(AsignacionTarea at) {
+        if (at == null || at.getIdEmpleado() <= 0 || at.getIdTarea() <= 0) {
+            return false;
+        }
+        if (dao.existe(at.getIdEmpleado(), at.getIdTarea())) {
+            return false;
+        }
         return dao.insertar(at);
     }
 
     @Override
     public boolean desasignar(int id) {
-        return dao.eliminar(id);
+        return id > 0 && dao.eliminar(id);
     }
 }

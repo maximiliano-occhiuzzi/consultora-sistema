@@ -2,18 +2,22 @@ package com.consultora.sistema.controller;
 
 import com.consultora.sistema.domain.AsignacionProyecto;
 import com.consultora.sistema.domain.AsignacionTarea;
+import com.consultora.sistema.domain.Tarea;
 import com.consultora.sistema.service.*;
 import com.consultora.sistema.service.impl.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/Asignaciones")
 public class AsignacionServlet extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
 
     private final AsignacionProyectoService asignacionProyectoService = new AsignacionProyectoServiceImpl();
     private final AsignacionTareaService asignacionTareaService = new AsignacionTareaServiceImpl();
@@ -22,21 +26,22 @@ public class AsignacionServlet extends HttpServlet {
     private final TareaService tareaService = new TareaServiceImpl();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String tipo = request.getParameter("tipo");
+
         String accion = request.getParameter("accion");
 
         if ("eliminarProyecto".equals(accion)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            asignacionProyectoService.desasignar(id);
-            response.sendRedirect(request.getContextPath() + "/Asignaciones");
+            int id = parseId(request.getParameter("id"));
+            boolean ok = id > 0 && asignacionProyectoService.desasignar(id);
+            response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=" + (ok ? "removido" : "error"));
             return;
-        } else if ("eliminarTarea".equals(accion)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            asignacionTareaService.desasignar(id);
-            response.sendRedirect(request.getContextPath() + "/Asignaciones");
+        }
+
+        if ("eliminarTarea".equals(accion)) {
+            int id = parseId(request.getParameter("id"));
+            boolean ok = id > 0 && asignacionTareaService.desasignar(id);
+            response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=" + (ok ? "removido" : "error"));
             return;
         }
 
@@ -50,20 +55,66 @@ public class AsignacionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String tipo = request.getParameter("tipo");
-        int idEmpleado = Integer.parseInt(request.getParameter("idEmpleado"));
 
-        if ("proyecto".equals(tipo)) {
-            int idProyecto = Integer.parseInt(request.getParameter("idProyecto"));
-            asignacionProyectoService.asignar(new AsignacionProyecto(0, idEmpleado, idProyecto));
-        } else if ("tarea".equals(tipo)) {
-            int idTarea = Integer.parseInt(request.getParameter("idTarea"));
-            asignacionTareaService.asignar(new AsignacionTarea(0, idEmpleado, idTarea));
+        request.setCharacterEncoding("UTF-8");
+
+        String tipo = request.getParameter("tipo");
+        int idEmpleado = parseId(request.getParameter("idEmpleado"));
+
+        if (idEmpleado <= 0) {
+            response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=error");
+            return;
         }
 
-        response.sendRedirect(request.getContextPath() + "/Asignaciones");
+        if ("proyecto".equals(tipo)) {
+            int idProyecto = parseId(request.getParameter("idProyecto"));
+            if (idProyecto <= 0) {
+                response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=error");
+                return;
+            }
+            boolean ok = asignacionProyectoService.asignar(new AsignacionProyecto(0, idEmpleado, idProyecto));
+            response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=" + (ok ? "asignado" : "duplicado"));
+            return;
+        }
+
+        if ("tarea".equals(tipo)) {
+            int idTarea = parseId(request.getParameter("idTarea"));
+            if (idTarea <= 0) {
+                response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=error");
+                return;
+            }
+            Tarea tarea = tareaService.buscarPorId(idTarea);
+
+            if (tarea == null) {
+                response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=error");
+                return;
+            }
+
+            // Para asignar una tarea, el empleado debe pertenecer al proyecto de la tarea.
+            if (tarea.getIdProyecto() > 0) {
+                List<AsignacionProyecto> equipo = asignacionProyectoService.listarPorProyecto(tarea.getIdProyecto());
+                boolean pertenece = equipo.stream().anyMatch(a -> a.getIdEmpleado() == idEmpleado);
+                if (!pertenece) {
+                    response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=sin-proyecto");
+                    return;
+                }
+            }
+
+            boolean ok = asignacionTareaService.asignar(new AsignacionTarea(0, idEmpleado, idTarea));
+            response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=" + (ok ? "asignado" : "duplicado"));
+            return;
+        }
+
+        response.sendRedirect(request.getContextPath() + "/Asignaciones?ok=error");
+    }
+
+    private int parseId(String value) {
+        try {
+            return value == null ? 0 : Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

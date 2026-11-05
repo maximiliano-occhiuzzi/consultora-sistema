@@ -5,6 +5,8 @@ import java.util.List;
 
 public interface AsignacionProyectoDAO {
     List<AsignacionProyecto> listar();
+    List<AsignacionProyecto> listarPorProyecto(int idProyecto);
+    boolean existe(int idEmpleado, int idProyecto);
     boolean insertar(AsignacionProyecto ap);
     boolean eliminar(int id);
 }

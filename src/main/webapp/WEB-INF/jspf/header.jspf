@@ -1,0 +1,83 @@
+<%@ page pageEncoding="UTF-8" %>
+<%
+    String ctxPath = request.getContextPath();
+    String usuarioHeader = (String) session.getAttribute("username");
+    if (usuarioHeader == null || usuarioHeader.trim().isEmpty()) {
+        usuarioHeader = "Admin";
+    }
+    String activeNav = (String) request.getAttribute("activeNav");
+    if (activeNav == null) {
+        activeNav = "";
+    }
+    String pageTitle = (String) request.getAttribute("pageTitle");
+    if (pageTitle == null) {
+        pageTitle = "Panel";
+    }
+    String inicialesUsuario = usuarioHeader.substring(0, 1).toUpperCase();
+%>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %> | TechConsult</title>
+    <link rel="stylesheet" href="<%= ctxPath %>/styles/estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <a class="brand" href="<%= ctxPath %>/Dashboard">
+            <span class="brand-dot">TC</span>
+            <span>
+                <strong>TechConsult</strong>
+                <small>Administración</small>
+            </span>
+        </a>
+
+        <nav>
+            <a class="<%= "inicio".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Dashboard">
+                <i class="fa-solid fa-house"></i> <span>Inicio</span>
+            </a>
+            <a class="<%= "empleados".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Empleado">
+                <i class="fa-solid fa-users"></i> <span>Empleados</span>
+            </a>
+            <a class="<%= "proyectos".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Proyecto">
+                <i class="fa-solid fa-diagram-project"></i> <span>Proyectos</span>
+            </a>
+            <a class="<%= "asignaciones".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Asignaciones">
+                <i class="fa-solid fa-list-check"></i> <span>Asignaciones</span>
+            </a>
+            <a class="<%= "tareas".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Tarea">
+                <i class="fa-solid fa-tasks"></i> <span>Tareas</span>
+            </a>
+            <a class="<%= "disponibilidad".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Empleado?accion=disponibilidad">
+                <i class="fa-solid fa-user-clock"></i> <span>Disponibilidad</span>
+            </a>
+            <a class="<%= "chat".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Chat">
+                <i class="fa-solid fa-comments"></i> <span>Chat</span>
+            </a>
+
+            <div class="nav-separator"></div>
+
+            <a class="<%= "configuracion".equals(activeNav) ? "active" : "" %>" href="<%= ctxPath %>/Proyecto?accion=configuracion">
+                <i class="fa-solid fa-gear"></i> <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="user-box">
+            <div class="avatar primary"><%= inicialesUsuario %></div>
+            <div class="user-meta">
+                <strong><%= usuarioHeader %></strong>
+                <small>Administrador</small>
+            </div>
+            <a class="icon-link" href="<%= ctxPath %>/Proyecto?accion=configuracion" title="Configuración">
+                <i class="fa-solid fa-gear"></i>
+            </a>
+            <a class="icon-link danger" href="<%= ctxPath %>/Logout" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </aside>
+
+    <main class="content">
